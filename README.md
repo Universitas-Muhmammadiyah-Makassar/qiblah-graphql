@@ -1,23 +1,16 @@
 
-# Solar Position and Qibla Direction API
+# Qiblah GraphQL - FastAPI with Uvicorn and PM2
 
-This project is a GraphQL API built using [Strawberry](https://strawberry.rocks/), [FastAPI](https://fastapi.tiangolo.com/), and [PyEphem](https://rhodesmill.org/pyephem/). The API calculates solar positions, shadow directions, the distance to the Kaaba, and Qibla direction based on input coordinates and observation time.
+This project is a FastAPI application running with Uvicorn and managed by PM2 for process management. The application provides a GraphQL API built using Strawberry, with calculations related to solar positions and Qibla direction.
 
 ## Features
 
-- Calculate solar declination, hour angle, solar elevation, and azimuth.
-- Calculate shadow azimuth.
-- Compute the distance to the Kaaba using Vincenty distance.
-- Convert and return coordinates in DMS (degrees, minutes, seconds) format.
-- Return local time, UTC time, and timezone offset based on the observation coordinates.
-
-## Technologies
-
-- **GraphQL**: Query API via GraphQL queries.
-- **Strawberry**: A Python library for building GraphQL APIs.
-- **FastAPI**: A modern, fast web framework for building APIs.
-- **Ephem**: A library for performing high-precision astronomy calculations.
-- **Geopy**: Used for calculating geodesic distances.
+- FastAPI app with a GraphQL API using Strawberry.
+- Solar position and Qibla direction calculations.
+- Uvicorn server with live reloading for development.
+- Deployed and managed with PM2 for clustering, auto-restarts, and background execution.
+- Custom bash script to start Uvicorn with specific host and port options.
+- Environment variables managed using `.env` files.
 
 ## Setup
 
@@ -25,6 +18,8 @@ This project is a GraphQL API built using [Strawberry](https://strawberry.rocks/
 
 - Python 3.7+
 - pip (Python package installer)
+- PM2 (Process Manager for Node.js, but can manage any script)
+- Uvicorn (for running the FastAPI app)
 
 ### Installation
 
@@ -38,8 +33,8 @@ This project is a GraphQL API built using [Strawberry](https://strawberry.rocks/
 2. Create a virtual environment:
 
    ```bash
-   python3 -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   python3 -m venv .venv
+   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
    ```
 
 3. Install the required dependencies:
@@ -48,43 +43,99 @@ This project is a GraphQL API built using [Strawberry](https://strawberry.rocks/
    pip install -r requirements.txt
    ```
 
-4. Copy the `.env-sample` file to `.env`:
+4. Create an `.env` file (optional but recommended):
 
    ```bash
    cp .env-sample .env
    ```
 
-5. Open the `.env` file and modify the variables as needed. For example, you can specify the port number for the application:
+5. Edit `.env` to set your port (default is 8118):
 
    ```
-   PORT=8880
+   PORT=8118
    ```
 
-The application will now load the environment variables from the `.env` file when running.
+### Running the Application with PM2
 
-### Running the Server
-
-1. Start the FastAPI server using `uvicorn`:
+1. **Create the startup script**: Ensure that the `start_uvicorn.sh` script is in your project root with the following content:
 
    ```bash
-   uvicorn main:app --reload
+   #!/bin/bash
+   # Activate the virtual environment
+   source ./.venv/bin/activate
+
+   # Run Uvicorn with reload, host, and port options
+   exec uvicorn main:app --reload --host 0.0.0.0 --port 8118
    ```
 
-   The server will start at `http://localhost:8000/graphql`.
+2. **Create the PM2 ecosystem configuration**: Ensure that the `ecosystem.config.js` file is present with the following content:
 
-2. Open your browser and visit the following URL to access the GraphQL playground:
-
+   ```js
+   module.exports = {
+       apps: [
+         {
+           name: "qiblah-graphql",
+           script: "./start_uvicorn.sh",  // Run the custom bash script
+           exec_mode: "fork",  // Run in fork mode
+           interpreter: "/bin/bash",  // Use bash to run the script
+         },
+       ],
+     };
    ```
-   http://localhost:8000/graphql
+
+3. **Make the startup script executable**:
+
+   ```bash
+   chmod +x start_uvicorn.sh
    ```
 
-## Usage
+4. **Start the application with PM2**:
 
-### Example Query
+   ```bash
+   pm2 start ecosystem.config.js
+   ```
 
-You can query the API by providing observation coordinates in DMS (degrees, minutes, seconds) format and a date-time for the observation.
+   This will start the FastAPI application using Uvicorn with the settings defined in the bash script.
 
-Example GraphQL query:
+5. **Check the application status**:
+
+   ```bash
+   pm2 status
+   ```
+
+6. **View logs**:
+
+   ```bash
+   pm2 logs qiblah-graphql
+   ```
+
+### Stopping and Restarting the Application
+
+- **Stop the application**:
+
+  ```bash
+  pm2 stop qiblah-graphql
+  ```
+
+- **Restart the application**:
+
+  ```bash
+  pm2 restart qiblah-graphql
+  ```
+
+- **Delete the process**:
+
+  ```bash
+  pm2 delete qiblah-graphql
+  ```
+
+### Usage
+
+Once the application is running, you can access the GraphQL endpoint at `/graphql`.
+
+#### Example Query:
+
+You can use the following GraphQL query to calculate the solar position and Qibla direction:
 
 ```graphql
 query {
@@ -102,8 +153,8 @@ query {
     shadowAzimuthDifference
     distanceToKaaba
     observationLocation {
-      latitudeDms
-      longitudeDms
+      latitude
+      longitude
     }
     observationTime {
       localTime
@@ -114,27 +165,25 @@ query {
 }
 ```
 
-### Response
+#### Example Response:
 
-The API will respond with the solar positioning data, distance to the Kaaba, and formatted observation times.
-
-Example response:
+The response to the above query might look like this:
 
 ```json
 {
   "data": {
     "solarPosition": {
-      "solarDeclination": 13.45,
-      "hourAngle": 23.12,
-      "solarElevation": 45.67,
-      "solarAzimuth": 210.45,
-      "shadowAzimuth": 30.45,
-      "sunAzimuthDifference": 11.23,
-      "shadowAzimuthDifference": 45.89,
-      "distanceToKaaba": 8650.32,
+      "solarDeclination": "21.24782793044105",
+      "hourAngle": "79.6572430421567",
+      "solarElevation": "7.804921197597039",
+      "solarAzimuth": "292.29977602139326",
+      "shadowAzimuth": "112.29977602139326",
+      "sunAzimuthDifference": "0.1802781276950327",
+      "shadowAzimuthDifference": "179.81972187230497",
+      "distanceToKaaba": "9155.546814642335",
       "observationLocation": {
-        "latitudeDms": "5° 10' 55.3" S",
-        "longitudeDms": "119° 26' 27.5" E"
+        "latitude": "5.0° 10.0' 55.3" S",
+        "longitude": "119.0° 26.0' 27.5" E"
       },
       "observationTime": {
         "localTime": "2024/07/16 17:27:00 (Asia/Makassar)",
@@ -146,88 +195,13 @@ Example response:
 }
 ```
 
-## Project Structure
-
-- **main.py**: The main application file that contains the FastAPI setup, GraphQL schema, and resolvers.
-- **requirements.txt**: A list of Python dependencies needed for the project.
-
-## Running in Cluster Mode with PM2
-
-You can run the FastAPI app in cluster mode with multiple instances using `pm2`. This will allow the application to scale across multiple CPU cores.
-
-### Option 1: Using the Ecosystem Configuration
-
-1. Create an `ecosystem.config.js` file with the following content:
-
-   ```js
-   module.exports = {
-     apps: [
-       {
-         name: "qiblah-graphql",    // Name of the app in PM2
-         script: "uvicorn",         // Script to run (use uvicorn as the script)
-         args: "main:app --reload", // Arguments to pass to uvicorn
-         exec_mode: "cluster",      // Cluster mode for multi-node processes
-         instances: 3,              // Number of instances (3 nodes)
-         interpreter: "python3",    // Python interpreter to use
-         watch: true,               // Enable watch mode (optional, for development)
-         autorestart: true,         // Auto-restart if the app crashes
-         max_memory_restart: "1G",  // Restart if memory usage exceeds 1GB
-       }
-     ]
-   };
-   ```
-
-2. Start the application with `pm2` using the ecosystem config file:
-
-   ```bash
-   pm2 start ecosystem.config.js
-   ```
-
-This will run your `uvicorn` app in cluster mode with 3 instances.
-
-### Option 2: Using the Direct pm2 Command
-
-Alternatively, you can achieve the same result using a direct command:
-
-```bash
-pm2 start "uvicorn main:app --reload" --name qiblah-graphql --interpreter=python3 --instances=3 --exec-mode=cluster
-```
-
-### Managing the Cluster
-
-- **Check the status**: You can monitor the status of your instances using:
-
-  ```bash
-  pm2 status
-  ```
-
-- **Scaling instances**: To scale the number of instances up or down:
-
-  ```bash
-  pm2 scale qiblah-graphql 5  # To scale up to 5 instances
-  ```
-
-- **Stopping the app**: You can stop the application with:
-
-  ```bash
-  pm2 stop qiblah-graphql
-  ```
-
-- **Restarting the app**: Restart the app with:
-
-  ```bash
-  pm2 restart qiblah-graphql
-  ```
-
-Using these steps, `pm2` will manage your FastAPI `uvicorn` server in a clustered environment, distributing the load across multiple nodes.
-
-## License
+### License
 
 This project is open source and available under the [MIT License](LICENSE).
 
-## Acknowledgements
+### Acknowledgements
 
 - [Strawberry GraphQL](https://strawberry.rocks/)
 - [FastAPI](https://fastapi.tiangolo.com/)
-- [PyEphem](https://rhodesmill.org/pyephem/)
-- [Geopy](https://geopy.readthedocs.io/)
+- [Uvicorn](https://www.uvicorn.org/)
+- [PM2](https://pm2.keymetrics.io/)
