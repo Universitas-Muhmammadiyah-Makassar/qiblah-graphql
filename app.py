@@ -172,7 +172,7 @@ graphql_app = GraphQLRouter(schema)
 app.include_router(graphql_app, prefix="/graphql")
 
 # Load the port from .env or default to 8880
-port = int(os.getenv("PORT", 8880))
+port = int(os.getenv("PORT", 8118))
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=port)
