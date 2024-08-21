@@ -38,8 +38,8 @@ This project is a GraphQL API built using [Strawberry](https://strawberry.rocks/
 2. Create a virtual environment:
 
    ```bash
-   python3 -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   python3 -m venv .venv
+   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
    ```
 
 3. Install the required dependencies:
