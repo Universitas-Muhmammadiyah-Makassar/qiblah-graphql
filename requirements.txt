@@ -1,0 +1,8 @@
+strawberry-graphql
+ephem
+pytz
+timezonefinder
+fastapi
+uvicorn
+geopy
+
