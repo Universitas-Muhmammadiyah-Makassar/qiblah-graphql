@@ -1,3 +1,4 @@
+import os
 import strawberry
 import ephem
 import math
@@ -5,6 +6,13 @@ from datetime import datetime, timedelta
 from timezonefinder import TimezoneFinder
 import pytz
 from geopy.distance import geodesic
+from fastapi import FastAPI
+from strawberry.fastapi import GraphQLRouter
+import uvicorn
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Utility functions
 def dms_to_dd(degrees, minutes, seconds, direction):
@@ -158,15 +166,13 @@ class Query:
 # Create the schema using Strawberry
 schema = strawberry.Schema(query=Query)
 
-# Example using FastAPI to serve the GraphQL API
-from fastapi import FastAPI
-from strawberry.fastapi import GraphQLRouter
-
+# Initialize FastAPI app and GraphQL
 app = FastAPI()
 graphql_app = GraphQLRouter(schema)
-
 app.include_router(graphql_app, prefix="/graphql")
 
+# Load the port from .env or default to 8880
+port = int(os.getenv("PORT", 8880))
+
 if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8880)
+    uvicorn.run(app, host="0.0.0.0", port=port)
