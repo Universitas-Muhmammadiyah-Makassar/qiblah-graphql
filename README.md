@@ -163,7 +163,7 @@ You can run the FastAPI app in cluster mode with multiple instances using `pm2`.
    module.exports = {
      apps: [
        {
-         name: "my-app",            // Name of the app in PM2
+         name: "qiblah-graphql",    // Name of the app in PM2
          script: "uvicorn",         // Script to run (use uvicorn as the script)
          args: "main:app --reload", // Arguments to pass to uvicorn
          exec_mode: "cluster",      // Cluster mode for multi-node processes
@@ -190,7 +190,7 @@ This will run your `uvicorn` app in cluster mode with 3 instances.
 Alternatively, you can achieve the same result using a direct command:
 
 ```bash
-pm2 start "uvicorn main:app --reload" --name my-app --interpreter=python3 --instances=3 --exec-mode=cluster
+pm2 start "uvicorn main:app --reload" --name qiblah-graphql --interpreter=python3 --instances=3 --exec-mode=cluster
 ```
 
 ### Managing the Cluster
@@ -204,19 +204,19 @@ pm2 start "uvicorn main:app --reload" --name my-app --interpreter=python3 --inst
 - **Scaling instances**: To scale the number of instances up or down:
 
   ```bash
-  pm2 scale my-app 5  # To scale up to 5 instances
+  pm2 scale qiblah-graphql 5  # To scale up to 5 instances
   ```
 
 - **Stopping the app**: You can stop the application with:
 
   ```bash
-  pm2 stop my-app
+  pm2 stop qiblah-graphql
   ```
 
 - **Restarting the app**: Restart the app with:
 
   ```bash
-  pm2 restart my-app
+  pm2 restart qiblah-graphql
   ```
 
 Using these steps, `pm2` will manage your FastAPI `uvicorn` server in a clustered environment, distributing the load across multiple nodes.

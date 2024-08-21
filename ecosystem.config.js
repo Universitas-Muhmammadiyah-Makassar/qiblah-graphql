@@ -1,7 +1,7 @@
 module.exports = {
     apps: [
       {
-        name: "my-app",            // Name of the app in PM2
+        name: "qiblah-graphql",    // Name of the app in PM2
         script: "uvicorn",         // Script to run (use uvicorn as the script)
         args: "main:app --reload", // Arguments to pass to uvicorn
         exec_mode: "cluster",      // Cluster mode for multi-node processes
