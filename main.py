@@ -76,6 +76,7 @@ class SolarPosition:
     shadow_azimuth: float
     sun_azimuth_difference: float
     shadow_azimuth_difference: float
+    qibla_direction: float
     distance_to_kaaba: float
     observation_location: ObservationLocation
     observation_time: ObservationTime
@@ -151,6 +152,7 @@ class Query:
             shadow_azimuth=shadow_azimuth,
             sun_azimuth_difference=sun_azimuth_difference,
             shadow_azimuth_difference=shadow_azimuth_difference,
+            qibla_direction= qibla_direction,
             distance_to_kaaba=distance_to_kaaba,
             observation_location=ObservationLocation(
                 latitude=observation_latitude_dms,
