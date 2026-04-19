@@ -1,0 +1,8 @@
+services:
+  qiblah-graphql:
+    build: .
+    ports:
+      - "${PORT:-8118}:8118"
+    env_file:
+      - .env
+    restart: always
